@@ -57,7 +57,7 @@ def read_note(note_id: int, service: NoteService = Depends(get_note_service)):
 
     return db_note
 
-@app.put('/notes/{note_id}', status_code=201, response_model=schemas.NoteResponse)
+@app.put('/notes/{note_id}', status_code=200, response_model=schemas.NoteResponse)
 def update_note(note: schemas.NoteUpdate, note_id: int, service: NoteService = Depends(get_note_service)):
 
     updated_note = service.update_note(note_id=note_id, note=note)
