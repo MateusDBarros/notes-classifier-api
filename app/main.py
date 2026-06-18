@@ -30,7 +30,7 @@ def get_db():
     finally:
         db.close()
 
-@app.post('/notes', response_model=schemas.NoteResponse, status_code=201)
+@app.post('/notes', response_model=schemas.NoteCreate, status_code=201)
 def create_note(note: schemas.NoteCreate, db: Session = Depends(get_db)):
     note_service = NoteService(session=db)
     new_note = note_service.create_note(note)
@@ -40,16 +40,6 @@ def create_note(note: schemas.NoteCreate, db: Session = Depends(get_db)):
 def get_notes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     note_service = NoteService(session=db)
     return note_service.get_notes(skip=skip, limit=limit)
-
-# 4. PUT /notes/{note_id}  -> response_model=schemas.NoteResponse
-#    - takes a schemas.NoteUpdate body
-#    - calls crud.update_note(db, note_id, note)
-#    - if None: raise 404 same as above
-#
-# 5. DELETE /notes/{note_id}  -> status_code=204
-#    - calls crud.delete_note(db, note_id)
-#    - if False: raise 404
-#    - if True: return None (204 means "no content")
 
 @app.get('/notes/{note_id}', status_code=201, response_model=schemas.NoteResponse)
 def read_note(note_id: int, db: Session = Depends(get_db)):
@@ -63,3 +53,30 @@ def read_note(note_id: int, db: Session = Depends(get_db)):
         )
 
     return db_note
+
+@app.put('/notes/{note_id}', status_code=201, response_model=schemas.NoteUpdate)
+def update_note(note: schemas.NoteUpdate, note_id: int, db: Session = Depends(get_db)):
+    note_service = NoteService(session=db)
+    updated_note = note_service.update_note(note_id=note_id, note=note)
+
+    if updated_note is None:
+        raise HTTPException(
+            status_code=404,
+            detail='Note not found'
+        )
+
+    return updated_note
+
+@app.delete('/notes/{note_id}', status_code=204)
+def delete_note(note_id: int, db: Session = Depends(get_db)):
+
+    note_service = NoteService(session=db)
+    is_deleted = note_service.delete_note(note_id=note_id)
+
+    if is_deleted:
+        return None
+
+    raise HTTPException(
+        status_code=404,
+        detail='Note not found'
+    )
