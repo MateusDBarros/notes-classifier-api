@@ -12,7 +12,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from . import models, schemas
-from crud import NoteService
+from .crud import NoteService
 from .database import engine, SessionLocal
 
 
@@ -30,21 +30,24 @@ def get_db():
     finally:
         db.close()
 
-@app.post('/notes', response_model=schemas.NoteCreate, status_code=201)
-def create_note(note: schemas.NoteCreate, db: Session = Depends(get_db)):
-    note_service = NoteService(session=db)
-    new_note = note_service.create_note(note)
+def get_note_service(db: Session = Depends(get_db)):
+    return NoteService(session=db)
+
+@app.post('/notes', response_model=schemas.NoteResponse, status_code=201)
+def create_note(note: schemas.NoteCreate,service: NoteService = Depends(get_note_service)):
+
+    new_note = service.create_note(note)
     return new_note
 
-@app.get('/notes', response_model=list[schemas.NoteResponse], status_code=201)
-def get_notes(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    note_service = NoteService(session=db)
-    return note_service.get_notes(skip=skip, limit=limit)
+@app.get('/notes', response_model=list[schemas.NoteResponse], status_code=200)
+def get_notes(skip: int = 0, limit: int = 100, service: NoteService = Depends(get_note_service)):
 
-@app.get('/notes/{note_id}', status_code=201, response_model=schemas.NoteResponse)
-def read_note(note_id: int, db: Session = Depends(get_db)):
-    note_service = NoteService(session=db)
-    db_note = note_service.get_note(note_id=note_id)
+    return service.get_notes(skip=skip, limit=limit)
+
+@app.get('/notes/{note_id}', status_code=200, response_model=schemas.NoteResponse)
+def read_note(note_id: int, service: NoteService = Depends(get_note_service)):
+
+    db_note = service.get_note(note_id=note_id)
 
     if db_note is None:
         raise HTTPException(
@@ -54,10 +57,10 @@ def read_note(note_id: int, db: Session = Depends(get_db)):
 
     return db_note
 
-@app.put('/notes/{note_id}', status_code=201, response_model=schemas.NoteUpdate)
-def update_note(note: schemas.NoteUpdate, note_id: int, db: Session = Depends(get_db)):
-    note_service = NoteService(session=db)
-    updated_note = note_service.update_note(note_id=note_id, note=note)
+@app.put('/notes/{note_id}', status_code=201, response_model=schemas.NoteResponse)
+def update_note(note: schemas.NoteUpdate, note_id: int, service: NoteService = Depends(get_note_service)):
+
+    updated_note = service.update_note(note_id=note_id, note=note)
 
     if updated_note is None:
         raise HTTPException(
@@ -68,10 +71,9 @@ def update_note(note: schemas.NoteUpdate, note_id: int, db: Session = Depends(ge
     return updated_note
 
 @app.delete('/notes/{note_id}', status_code=204)
-def delete_note(note_id: int, db: Session = Depends(get_db)):
+def delete_note(note_id: int, service: NoteService = Depends(get_note_service)):
 
-    note_service = NoteService(session=db)
-    is_deleted = note_service.delete_note(note_id=note_id)
+    is_deleted = service.delete_note(note_id=note_id)
 
     if is_deleted:
         return None
