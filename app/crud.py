@@ -25,6 +25,12 @@ class NoteService:
 
     def create_note(self, note: schemas.NoteCreate) -> Note:
         new_note = models.Note(**note.model_dump())
+
+        # TODO: call classify() on the note's text, set new_note.tag before saving
+        # Hint: from ..ml.classify import classify
+        #       combine title + content into one string (same format as training data)
+        #       new_note.tag = classify(combined_text)
+
         self._db.add(new_note)
         self._db.commit()
         self._db.refresh(new_note)
