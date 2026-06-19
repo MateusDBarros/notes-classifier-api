@@ -33,6 +33,9 @@ def get_db():
 def get_note_service(db: Session = Depends(get_db)):
     return NoteService(session=db)
 
+@app.get('/health')
+def health():
+    return {'message': 'Server is Good!'}
 @app.post('/notes', response_model=schemas.NoteResponse, status_code=201)
 def create_note(note: schemas.NoteCreate,service: NoteService = Depends(get_note_service)):
 
