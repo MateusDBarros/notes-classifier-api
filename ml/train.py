@@ -19,10 +19,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from .training_data import TRAINING_DATA
 from sklearn.pipeline import Pipeline
+from .config import MODEL_PATH
 import joblib
-import os
-
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "note_classifier.joblib")
 
 texts, labels = zip(*TRAINING_DATA)
 

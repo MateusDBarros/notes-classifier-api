@@ -8,8 +8,8 @@ Doing it once when the module is first imported means every request
 afterward reuses the already-loaded model in memory.
 """
 
+from .config import MODEL_PATH
 import joblib
-from .train import MODEL_PATH
 
 _model = None
 
