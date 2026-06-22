@@ -8,6 +8,8 @@ class Config(BaseSettings):
     db_name: str = 'notes.db'
 
 
+
+
     @property
     def db_url(self):
         return f"sqlite:///./{self.db_name}"

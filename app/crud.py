@@ -10,7 +10,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 from . import models, schemas
 from .models import Note
-from ..ml.classify import classify
+from ml.classify import classify
 
 
 class NoteService:
@@ -28,7 +28,7 @@ class NoteService:
     def create_note(self, note: schemas.NoteCreate) -> Note:
         new_note = models.Note(**note.model_dump())
 
-        combined = new_note.title + new_note.content
+        combined = new_note.title+ " " +new_note.content
         new_note.tag = classify(combined)
 
         self._db.add(new_note)
